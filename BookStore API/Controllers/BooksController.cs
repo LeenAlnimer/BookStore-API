@@ -1,6 +1,5 @@
-﻿using BookStore_API.Data;
-using BookStore_API.Models;
-using BookStore_API.DTOs;
+﻿using BookStore_API.DTOs;
+using BookStore_API.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookStore_API.Controllers
@@ -9,76 +8,60 @@ namespace BookStore_API.Controllers
     [ApiController]
     public class BooksController : ControllerBase
     {
-        private readonly BookDbContext _context;
+        private readonly IBookService _bookService;
 
-        public BooksController(BookDbContext context)
+        public BooksController(IBookService bookService)
         {
-            _context = context;
+            _bookService = bookService;
         }
 
-        // GET: api/books
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            return Ok(_context.Books.ToList());
+            return Ok(await _bookService.GetAllAsync());
         }
 
-        // GET: api/books/1
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var book = _context.Books.Find(id);
+            var book = await _bookService.GetByIdAsync(id);
             if (book == null)
-                return NotFound();
+                return NotFound(new { message = "Book not found" });
 
             return Ok(book);
         }
 
-        // POST: api/books
         [HttpPost]
-        public IActionResult Create(CreateBookDto dto)
+        public async Task<IActionResult> Create(CreateBookDto dto)
         {
-            var book = new Book
-            {
-                Title = dto.Title,
-                Author = dto.Author,
-                Year = dto.Year
-            };
-
-            _context.Books.Add(book);
-            _context.SaveChanges();
-
+            var book = await _bookService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = book.Id }, book);
         }
 
-        // PUT: api/books/1
         [HttpPut("{id}")]
-        public IActionResult Update(int id, UpdateBookDto dto)
+        public async Task<IActionResult> Update(int id, UpdateBookDto dto)
         {
-            var book = _context.Books.Find(id);
-            if (book == null)
-                return NotFound();
+            var updated = await _bookService.UpdateAsync(id, dto);
+            if (!updated)
+                return NotFound(new { message = "Book not found" });
 
-            book.Title = dto.Title;
-            book.Author = dto.Author;
-            book.Year = dto.Year;
-
-            _context.SaveChanges();
             return NoContent();
         }
 
-        // DELETE: api/books/1
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var book = _context.Books.Find(id);
-            if (book == null)
-                return NotFound();
-
-            _context.Books.Remove(book);
-            _context.SaveChanges();
+            var deleted = await _bookService.DeleteAsync(id);
+            if (!deleted)
+                return NotFound(new { message = "Book not found" });
 
             return NoContent();
+        }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search(string title)
+        {
+            return Ok(await _bookService.SearchAsync(title));
         }
     }
 }

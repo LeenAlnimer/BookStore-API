@@ -1,4 +1,5 @@
 using BookStore_API.Data;
+using BookStore_API.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,9 +7,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Controllers
 builder.Services.AddControllers();
 
-// DbContext (InMemory)
+// DbContext
 builder.Services.AddDbContext<BookDbContext>(options =>
     options.UseInMemoryDatabase("BookStoreDb"));
+
+// Services
+builder.Services.AddScoped<IBookService, BookService>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
