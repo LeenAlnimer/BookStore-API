@@ -2,16 +2,19 @@
 using BookStore_API.DTOs;
 using BookStore_API.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace BookStore_API.Services
 {
     public class BookService : IBookService
     {
         private readonly BookDbContext _context;
+        private readonly ILogger<BookService> _logger;
 
-        public BookService(BookDbContext context)
+        public BookService(BookDbContext context, ILogger<BookService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<List<Book>> GetAllAsync()
@@ -35,6 +38,8 @@ namespace BookStore_API.Services
 
             await _context.Books.AddAsync(book);
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("Book created with ID {Id}", book.Id);
 
             return book;
         }
@@ -68,6 +73,15 @@ namespace BookStore_API.Services
         {
             return await _context.Books
                 .Where(b => b.Title.Contains(title))
+                .ToListAsync();
+        }
+
+        // ✅ Pagination
+        public async Task<List<Book>> GetPagedAsync(int pageNumber, int pageSize)
+        {
+            return await _context.Books
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
         }
     }

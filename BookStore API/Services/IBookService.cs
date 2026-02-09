@@ -11,5 +11,8 @@ namespace BookStore_API.Services
         Task<bool> UpdateAsync(int id, UpdateBookDto dto);
         Task<bool> DeleteAsync(int id);
         Task<List<Book>> SearchAsync(string title);
+
+        // NEW
+        Task<List<Book>> GetPagedAsync(int pageNumber, int pageSize);
     }
 }

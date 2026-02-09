@@ -63,5 +63,12 @@ namespace BookStore_API.Controllers
         {
             return Ok(await _bookService.SearchAsync(title));
         }
+
+        //  Pagination Endpoint
+        [HttpGet("paged")]
+        public async Task<IActionResult> GetPaged(int pageNumber = 1, int pageSize = 5)
+        {
+            return Ok(await _bookService.GetPagedAsync(pageNumber, pageSize));
+        }
     }
 }
